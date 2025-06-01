@@ -1,0 +1,54 @@
+version: "3.8"
+services:
+  web:
+    build: ./frontend
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+    networks:
+      - network-backend
+
+  api:
+    build: ./backend
+    depends_on:
+      - mongo
+    ports:
+      - "3001:3001"
+    networks:
+      - network-backend
+
+  node-exporter:
+    image: prom/node-exporter
+    container_name: node-exporter
+    ports:
+      - "9101:9100"
+    networks:
+      - network-backend
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - network-backend
+  
+  mongo:
+    image: mongo
+    restart: always
+    volumes: 
+      - mongodb_data:/data/db
+    environment: 
+      MONGODB_INITDB_ROOT_USERNAME: username
+      MONGODB_INITDB_ROOT_PASSWORD: password
+    networks:
+      - network-backend
+
+networks:
+  network-backend:
+
+volumes:
+  mongodb_data:
